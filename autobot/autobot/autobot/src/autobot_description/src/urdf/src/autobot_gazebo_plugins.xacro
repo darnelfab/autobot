@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<robot>
+
+	<!--differential drive controller plugin. This plugin is used linked to the chassis (BaseLink) in order for the robot to behave as a differential drive robot, can be controlled using teleop (cmd-vel) and also provides the wheel odometry of the robot for crude localisation purposes.-->
+	<!--source: Sheryas. 2020. Problem with gazebo differential drive plugin. https://answers.ros.org/question/355735/problem-with-gazebo-differential-drive-plugin/ .Accessed 20 September 2020-->
+	<!--source: Gazebo. 2014. Gazebo Plugins in ROS. http://gazebosim.org/tutorials?tut=ros_gzplugins .Accessed 20 September 2020-->
+  <gazebo>
+    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>40</updateRate>
+        <legacyMode>false</legacyMode>
+        <leftJoint>left_wheel_hinge</leftJoint>
+        <rightJoint>right_wheel_hinge</rightJoint>
+        <wheelSeparation>0.4</wheelSeparation>
+        <wheelDiameter>0.2</wheelDiameter>
+        <!--torque>10</torque-->
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <robotBaseFrame>chassis</robotBaseFrame>
+        <publishWheelTF>false</publishWheelTF>
+        <publishWheelJointState>false</publishWheelJointState>
+        <rosDebugLevel>na</rosDebugLevel>
+        <wheelAcceleration>0</wheelAcceleration>
+        <wheelTorque>10</wheelTorque>
+        <odometrySource>world</odometrySource>
+        <publishTf>1</publishTf>
+	<publishOdomTF>true</publishOdomTF>
+    </plugin>
+</gazebo>
+
+
+<!--********************************************************************************************************-->
+  <gazebo reference="chassis">
+      <material>Gazebo/Orange</material>
+    </gazebo>
+
+<!--********************************************************************************************************-->
+	<!--IMU plugin. The plugin is linked to the chassis (BaseLink) and provides the angular velocity and heading of the robot which is then fused to the odometer to provide a pose estimate-->
+	<!--source: Gazebo. 2014. Gazebo Plugins in ROS. http://gazebosim.org/tutorials?tut=ros_gzplugins .Accessed 20 September 2020-->
+	<!--source: Gazebo. 2014. Sensor Noise Model. http://gazebosim.org/tutorials?tut=sensor_noise .Accessed 20 September 2020-->
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu0</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+	<serviceName>imu_service</serviceName>
+	<gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link_0</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+<!--********************************************************************************************************-->
+	
+	<!-- Ground Truth Pose. The Ground Truth plugin is used to link the chassis to the world frame and obtain it's actual position in the world frame coordinate space. This pose is then used to assess the performance of the different localisation methods used in this project. -->
+	<!--Saurav. A. 2017. How To: Get ground truth pose data in ROS Gazebo. https://www.sauravag.com/2017/06/how-to-get-ground-truth-pose-data-in-ros-gazebo/. Accessed: 22 September 2020. -->
+
+	<!--Unknown. 2011. pr2_gazebo_plugins/Tutorials/Creating a ROS Ground Truth Pose Broadcaster. http://library.isr.ist.utl.pt/docs/roswiki/pr2_gazebo_plugins(2f)Tutorials(2f)Creating(20)a(20)ROS(20)Ground(20)Truth(20)Pose(20)Broadcaster.html . Accessed: 22 September 2020-->
+
+  <gazebo>
+      <plugin name="gazebo_ros_p3d" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>30.0</updateRate>
+      <bodyName>chassis</bodyName>
+      <topicName>ground_truth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>map</frameName>
+      </plugin>
+  </gazebo>  
+
+  <gazebo reference="chassis">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <gazebo reference="left_wheel">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <gazebo reference="right_wheel">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+<!--********************************************************************************************************-->	
+	<!--RGBD camera-->
+
+  <gazebo reference="camera_rgb_frame">
+  <sensor type="depth" name="realsense_R200">
+    <update_rate>20</update_rate>
+    <visualize>true</visualize> 
+    <camera>
+      <horizontal_fov>1.047198</horizontal_fov>
+      <image>
+        <width>1920</width>
+        <height>1080</height>
+        <format>R8G8B8</format>
+      </image>
+      <depth_camera>
+
+      </depth_camera>
+      <clip>
+        <near>0.05</near>
+        <far>20</far>
+      </clip>
+    </camera>
+    <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+      <baseline>0.2</baseline>
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1.0</updateRate>
+      <cameraName>camera</cameraName>
+      <frameName>camera_rgb_optical_frame</frameName>
+      <imageTopicName>rgb/image_raw</imageTopicName>
+      <depthImageTopicName>depth_registered/image_raw</depthImageTopicName>
+      <pointCloudTopicName>depth/points</pointCloudTopicName>
+      <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+      <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+      <pointCloudCutoff>0.4</pointCloudCutoff>
+      <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+      <CxPrime>0</CxPrime>
+      <Cx>0</Cx>
+      <Cy>0</Cy>
+      <focalLength>0</focalLength>
+      
+    </plugin>
+  </sensor>
+</gazebo>
+</robot>
