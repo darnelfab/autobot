@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+	<!--This launch file is used to launch the differential drive robot, spawns it into Gazebo which is used as a visual interface when controlling it in the various worlds. The rviz is used to see the tf of the different coordinate frames. -->
+	<!--Also, this launch files launches all all the sensors and extended kalman filters at the same time such that when running rosbag, all the data are automatically synchronised at the same pose at t=0 seconds. -->
+	<!--Since when teleop twist is launched, the terminal window needs to remain open in order to control the diffbot, a separate launch file is used, making the process more practical-->
+
+<launch>
+	<!--args to launch simulation in rviz & Gazebo-->
+  <arg name="world"                                     default="empty"/> 
+  <arg name="paused"                                    default="false"/>
+  <arg name="use_sim_time"                              default="true"/>
+  <arg name="gui"                                       default="true"/>
+  <arg name="headless"                                  default="false"/>
+  <arg name="debug"                                     default="false"/>
+  <arg name="rviz"                                      default="false" />
+
+
+<!--********************************************************************************************************-->
+    <!--settings to launch simulation in Gazebo and selection of the world-->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name"                              value="$(find autobot)/src/worlds/src/MyWorld.world"/>
+    <arg name="paused"                                  value="$(arg paused)"/>
+    <arg name="use_sim_time"                            value="$(arg use_sim_time)"/>
+    <arg name="gui"                                     value="$(arg gui)"/>
+    <arg name="headless"                                value="$(arg headless)"/>
+    <arg name="debug"                                   value="$(arg debug)"/>
+  </include>
+<!--********************************************************************************************************-->  
+	<!--set the autobot into the selected world and convert xacro to parameter server-->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find autobot)src/autobot_description/src/urdf/src/autobot.xacro'"/>
+	
+	<!--spawn robot into Gazebo-->
+  <node name="autobot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+   args="-urdf -param robot_description -model autobot" />
+<!--********************************************************************************************************-->
+	<!--launch arguments for rviz-->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find autobot)src/autobot_description/src/rviz/autobot.rviz"/>
+    
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="use_gui" value="False"/>
+    </node>
+
+  <!-- Show in Rviz   -->
+  <!--node name="rviz" pkg="rviz" type="rviz"/-->
+
+
+	<!--**************************************************************************************************************************-->
+
+</launch>
+
+
