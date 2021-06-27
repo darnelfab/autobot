@@ -6,6 +6,14 @@ Lauch the Gazebo and Rviz simulation
 roslaunch autobot autobot_1.launch
 ```
 
+<p align="center">
+  <img src = "autobot/autobot/autobot/src/images/gazebo-shot.png">
+  </p>
+
+
+<p align="center">
+  <img src = "autobot/autobot/autobot/src/images/rviz-shot.png">
+  </p>
 
 launch the imu0_subsciber.py
 ```
