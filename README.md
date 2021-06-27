@@ -20,5 +20,7 @@ launch the imu0_subsciber.py
 rosrun autobot imu0_subscriber.py
 ```
 
-
+<p align="center">
+  <img src = "autobot/autobot/src/images/imu_subscriber.png">
+  </p>
 
